@@ -1,54 +1,57 @@
--- Harley Cheat | Premium Blockspin Hub | Anti-Cheat Bypass
-getgenv().HarleyConfig = {
-    Bypass = true,
-    SilentAim = false,
-    ESP = false,
-    Stamina = false
-}
-
--- Anti-Cheat Bypass: Oyunu "Legit" modda gösterir
-local HookMetamethod = hookmetamethod or function() end
-local getrawmetatable = getrawmetatable or function() return {} end
-
--- Rayfield UI (Loadstring Mantığı)
+-- Harley Cheat | Premium Blockspin Hub
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
 local Window = Rayfield:CreateWindow({
-    Name = "Harley Cheat | Blockspin",
+    Name = "Harley Cheat | Premium",
     LoadingTitle = "Bypassing Security...",
     LoadingSubtitle = "by Swoxy",
-    Theme = "Amethyst"
+    Theme = "Amethyst",
 })
 
--- SİLENT AİM (Profesyonel Hook)
-local Combat = Window:CreateTab("Combat", 4483362456)
-Combat:CreateToggle({Name = "Silent Aim", Callback = function(v) getgenv().HarleyConfig.SilentAim = v end})
+local Tab = Window:CreateTab("Main", 4483362458)
 
--- ESP (Drawing API - Anti-Cheat Dostu)
-local Visuals = Window:CreateTab("ESP", 4483362456)
-Visuals:CreateToggle({Name = "ESP Enabled", Callback = function(v) getgenv().HarleyConfig.ESP = v end})
+-- Özellik Değişkenleri
+getgenv().SilentAim = false
+getgenv().ESP = false
 
--- PLAYERS (Anti-Fatigue Logic)
-local Players = Window:CreateTab("Players", 4483362456)
-Players:CreateToggle({Name = "Infinite Stamina", Callback = function(v)
-    getgenv().HarleyConfig.Stamina = v
-    if v then
-        game:GetService("RunService").Heartbeat:Connect(function()
-            if getgenv().HarleyConfig.Stamina and game.Players.LocalPlayer.Character:FindFirstChild("Stamina") then
-                game.Players.LocalPlayer.Character.Stamina.Value = 100 -- Bypass
+-- Silent Aim Toggle
+Tab:CreateToggle({
+    Name = "Silent Aim",
+    CurrentValue = false,
+    Flag = "SilentAim",
+    Callback = function(Value)
+        getgenv().SilentAim = Value
+        if Value then
+            print("Silent Aim Aktif")
+        end
+    end,
+})
+
+-- ESP Toggle
+Tab:CreateToggle({
+    Name = "ESP (Wallhack)",
+    CurrentValue = false,
+    Flag = "ESP",
+    Callback = function(Value)
+        getgenv().ESP = Value
+        if Value then
+            -- ESP için basit bir highlight ekleme
+            for _, v in pairs(game.Players:GetPlayers()) do
+                if v ~= game.Players.LocalPlayer then
+                    local highlight = Instance.new("Highlight", v.Character)
+                    highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                end
             end
-        end)
-    end
-end})
+        end
+    end,
+})
 
--- SILENT AIM ENGINE (Bypasslı)
-local mt = getrawmetatable(game)
-local old = mt.__namecall
-setreadonly(mt, false)
-mt.__namecall = newcclosure(function(self, ...)
-    local args = {...}
-    if getgenv().HarleyConfig.SilentAim and getnamecallmethod() == "FindPartOnRayWithIgnoreList" then
-        -- Silent Aim hesaplaması burada (Raycast bypass)
-    end
-    return old(self, unpack(args))
-end)
-setreadonly(mt, true)
+-- Bilgi Butonu
+Tab:CreateButton({
+    Name = "Konsolu Temizle",
+    Callback = function()
+        rconsoleclear()
+    end,
+})
+
+Rayfield:LoadConfiguration()
