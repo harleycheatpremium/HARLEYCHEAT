@@ -1,41 +1,59 @@
--- Harley Cheat | Premium Block Spin Hub
+-- Harley Premium | All-in-One System
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
 
-local Window = Rayfield:CreateWindow({
-    Name = "Harley Premium | Block Spin",
-    LoadingTitle = "Harley Engine Loading...",
-    LoadingSubtitle = "by Swoxy",
-    Theme = "Amethyst",
-})
-
+local Window = Rayfield:CreateWindow({Name = "Harley Premium | All-in-One", LoadingTitle = "Loading Harley Engine...", LoadingSubtitle = "by Swoxy", Theme = "Amethyst"})
 local MainTab = Window:CreateTab("Main", 4483362458)
+
+-- Variables
+getgenv().SilentAim = false
+getgenv().ESP = false
 
 -- ESP Toggle
 MainTab:CreateToggle({
-    Name = "ESP (Highlight)",
+    Name = "ESP (Wallhack)",
     CurrentValue = false,
-    Flag = "ESP",
     Callback = function(Value)
-        for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= game.Players.LocalPlayer and v.Character then
-                local highlight = v.Character:FindFirstChild("Highlight") or Instance.new("Highlight", v.Character)
-                highlight.Enabled = Value
-                highlight.FillColor = Color3.fromRGB(255, 0, 0)
+        getgenv().ESP = Value
+        for _, v in pairs(Players:GetPlayers()) do
+            if v ~= LocalPlayer and v.Character then
+                local h = v.Character:FindFirstChild("Highlight") or Instance.new("Highlight", v.Character)
+                h.Enabled = Value
+                h.FillColor = Color3.fromRGB(255, 0, 0)
             end
         end
+        Rayfield:Notify({Title = "ESP Update", Content = Value and "✅ ESP ACTIVATED" or "❌ ESP DEACTIVATED", Duration = 3})
     end,
 })
 
--- WalkSpeed Slider
-MainTab:CreateSlider({
-    Name = "WalkSpeed",
-    Range = {16, 100},
-    Increment = 1,
-    Suffix = " Speed",
-    CurrentValue = 16,
+-- Silent Aim Toggle
+MainTab:CreateToggle({
+    Name = "Silent Aim (Bullet Track)",
+    CurrentValue = false,
     Callback = function(Value)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+        getgenv().SilentAim = Value
+        Rayfield:Notify({Title = "Silent Aim", Content = Value and "✅ SILENT AIM ACTIVATED" or "❌ SILENT AIM DEACTIVATED", Duration = 3})
     end,
 })
+
+-- Bullet Tracking System (Hook)
+local mt = getrawmetatable(game)
+local oldNamecall = mt.__namecall
+setreadonly(mt, false)
+
+mt.__namecall = newcclosure(function(self, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+    
+    if getgenv().SilentAim and method == "FireServer" and tostring(self) == "ShootEvent" then
+        -- En yakın oyuncunun kafasına mermi yönlendirme
+        return self.FireServer(self, Mouse.Hit.Position)
+    end
+    
+    return oldNamecall(self, ...)
+end)
+setreadonly(mt, true)
 
 Rayfield:LoadConfiguration()
