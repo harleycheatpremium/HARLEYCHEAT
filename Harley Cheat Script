@@ -1,60 +1,57 @@
--- GODZILLA ENGINE | ALL-IN-ONE MORTY-STYLE PANEL
+-- GODZILLA ENGINE | ALL-IN-ONE MORTY-STYLE PANEL V6.0
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Camera = game:GetService("Workspace").CurrentCamera
 
--- // GLOBAL ENGINE DATA
+-- // ENGINE SETTINGS
 getgenv().Godzilla = {
-    SilentAim = {Enabled = false, FOV = 200, Part = "Head"},
-    ESP = {Enabled = false},
+    Silent = {Enabled = false, FOV = 200, Part = "Head"},
     KillAura = {Enabled = false, Range = 15},
+    ESP = {Enabled = false},
     Misc = {AntiKick = true}
 }
 
--- // CORE: SILENT AIM REDIRECT
+-- // HOOKING ENGINE (MORTY STYLE)
 local mt = getrawmetatable(game)
 setreadonly(mt, false)
 local oldNamecall = mt.__namecall
+
 mt.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
-    if getgenv().Godzilla.SilentAim.Enabled and method == "FireServer" then
+    
+    if getgenv().Godzilla.Silent.Enabled and method == "FireServer" then
         local Closest = nil
-        local MaxDist = getgenv().Godzilla.SilentAim.FOV
+        local MaxDist = getgenv().Godzilla.Silent.FOV
         for _, v in pairs(Players:GetPlayers()) do
             if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
                 local Pos, OnScreen = Camera:WorldToScreenPoint(v.Character.HumanoidRootPart.Position)
-                if OnScreen then
-                    local Dist = (Vector2.new(Pos.X, Pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-                    if Dist < MaxDist then Closest = v end
-                end
+                local Dist = (Vector2.new(Pos.X, Pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+                if OnScreen and Dist < MaxDist then Closest = v end
             end
         end
-        if Closest then args[1] = Closest.Character[getgenv().Godzilla.SilentAim.Part].Position end
+        if Closest then args[1] = Closest.Character[getgenv().Godzilla.Silent.Part].Position end
     end
+    
+    if getgenv().Godzilla.Misc.AntiKick and method == "Kick" then return nil end
     return oldNamecall(self, unpack(args))
 end)
 setreadonly(mt, true)
 
 -- // UI SETUP
-local Window = OrionLib:MakeWindow({Name = "GODZILLA ENGINE | ALL-IN-ONE", SaveConfig = true})
+local Window = OrionLib:MakeWindow({Name = "GODZILLA ENGINE | V6.0", SaveConfig = true})
 
--- Combat Tab
-local Combat = Window:MakeTab({Name = "Combat", Icon = "rbxassetid://4483345998"})
-Combat:AddToggle({Name = "Silent Aim", Callback = function(v) getgenv().Godzilla.SilentAim.Enabled = v end})
-Combat:AddDropdown({Name = "Aim Part", Options = {"Head", "HumanoidRootPart"}, Callback = function(v) getgenv().Godzilla.SilentAim.Part = v end})
+local Combat = Window:MakeTab({Name = "Combat Core", Icon = "rbxassetid://4483345998"})
+Combat:AddToggle({Name = "Silent Aim (Bullet Track)", Callback = function(v) getgenv().Godzilla.Silent.Enabled = v end})
+Combat:AddDropdown({Name = "Target Part", Options = {"Head", "HumanoidRootPart", "Torso"}, Callback = function(v) getgenv().Godzilla.Silent.Part = v end})
+Combat:AddSlider({Name = "FOV Size", Min = 50, Max = 500, Default = 200, Callback = function(v) getgenv().Godzilla.Silent.FOV = v end})
 
--- Visuals Tab
-local Visuals = Window:MakeTab({Name = "Visuals", Icon = "rbxassetid://4483345998"})
-Visuals:AddToggle({Name = "Player ESP", Callback = function(v) 
-    getgenv().Godzilla.ESP.Enabled = v
-    -- ESP logic here
-end})
+local Visuals = Window:MakeTab({Name = "Visual Engine", Icon = "rbxassetid://4483345998"})
+Visuals:AddToggle({Name = "Player ESP", Callback = function(v) getgenv().Godzilla.ESP.Enabled = v end})
 
--- Misc Tab
-local Misc = Window:MakeTab({Name = "Misc", Icon = "rbxassetid://4483345998"})
+local Misc = Window:MakeTab({Name = "Misc Settings", Icon = "rbxassetid://4483345998"})
 Misc:AddToggle({Name = "Anti-Kick Protection", Default = true, Callback = function(v) getgenv().Godzilla.Misc.AntiKick = v end})
-Misc:AddButton({Name = "Teleport to Spawn", Callback = function() LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 50, 0) end})
+Misc:AddButton({Name = "Rejoin Server", Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, LocalPlayer) end})
 
 OrionLib:Init()
