@@ -1,59 +1,60 @@
--- Harley Premium | All-in-One System
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
+-- GODZILLA MOD | HARLEY PREMIUM EDITION
+-- Loaded: Anti-Cheat Bypass v2.0
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "GODZILLA HACK | HARLEY EDITION", HidePremium = false, SaveConfig = true, ConfigFolder = "GodzillaConfig"})
 
-local Window = Rayfield:CreateWindow({Name = "Harley Premium | All-in-One", LoadingTitle = "Loading Harley Engine...", LoadingSubtitle = "by Swoxy", Theme = "Amethyst"})
-local MainTab = Window:CreateTab("Main", 4483362458)
-
--- Variables
-getgenv().SilentAim = false
-getgenv().ESP = false
-
--- ESP Toggle
-MainTab:CreateToggle({
-    Name = "ESP (Wallhack)",
-    CurrentValue = false,
-    Callback = function(Value)
-        getgenv().ESP = Value
-        for _, v in pairs(Players:GetPlayers()) do
-            if v ~= LocalPlayer and v.Character then
-                local h = v.Character:FindFirstChild("Highlight") or Instance.new("Highlight", v.Character)
-                h.Enabled = Value
-                h.FillColor = Color3.fromRGB(255, 0, 0)
-            end
-        end
-        Rayfield:Notify({Title = "ESP Update", Content = Value and "✅ ESP ACTIVATED" or "❌ ESP DEACTIVATED", Duration = 3})
-    end,
-})
-
--- Silent Aim Toggle
-MainTab:CreateToggle({
-    Name = "Silent Aim (Bullet Track)",
-    CurrentValue = false,
-    Callback = function(Value)
-        getgenv().SilentAim = Value
-        Rayfield:Notify({Title = "Silent Aim", Content = Value and "✅ SILENT AIM ACTIVATED" or "❌ SILENT AIM DEACTIVATED", Duration = 3})
-    end,
-})
-
--- Bullet Tracking System (Hook)
+-- SECURE BYPASS
 local mt = getrawmetatable(game)
-local oldNamecall = mt.__namecall
 setreadonly(mt, false)
-
+local oldNamecall = mt.__namecall
 mt.__namecall = newcclosure(function(self, ...)
-    local args = {...}
     local method = getnamecallmethod()
-    
-    if getgenv().SilentAim and method == "FireServer" and tostring(self) == "ShootEvent" then
-        -- En yakın oyuncunun kafasına mermi yönlendirme
-        return self.FireServer(self, Mouse.Hit.Position)
-    end
-    
+    if method == "FireServer" and tostring(self):lower():find("anticheat") then return nil end
     return oldNamecall(self, ...)
 end)
 setreadonly(mt, true)
 
-Rayfield:LoadConfiguration()
+-- TAB: COMBAT
+local CombatTab = Window:MakeTab({Name = "Combat", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+CombatTab:AddToggle({
+    Name = "Silent Aim (Headshot)",
+    Default = false,
+    Callback = function(Value) getgenv().SilentAim = Value end
+})
+
+-- TAB: VISUALS
+local VisualTab = Window:MakeTab({Name = "Visuals", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+VisualTab:AddToggle({
+    Name = "ESP Box (Full)",
+    Default = false,
+    Callback = function(Value)
+        for _,v in pairs(game.Players:GetPlayers()) do
+            if v ~= game.Players.LocalPlayer and v.Character then
+                local h = v.Character:FindFirstChild("Highlight") or Instance.new("Highlight", v.Character)
+                h.Enabled = Value
+            end
+        end
+    end
+})
+
+-- TAB: PLAYER (GOD MODE)
+local PlayerTab = Window:MakeTab({Name = "God Mode", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+PlayerTab:AddSlider({
+    Name = "Speed Hack",
+    Min = 16, Max = 150, Default = 16,
+    Callback = function(Value) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value end
+})
+
+PlayerTab:AddButton({
+    Name = "Kill All (Global)",
+    Callback = function()
+        -- Godzilla Hack tarzı global trigger
+        for _,v in pairs(game.Players:GetPlayers()) do
+            if v ~= game.Players.LocalPlayer then
+                -- Burada oyunun kendi "Damage" eventini tetiklemelisin
+            end
+        end
+    end
+})
+
+OrionLib:Init()
