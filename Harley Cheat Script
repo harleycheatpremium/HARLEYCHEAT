@@ -1,60 +1,94 @@
--- GODZILLA MOD | HARLEY PREMIUM EDITION
--- Loaded: Anti-Cheat Bypass v2.0
+--[[ 
+    HARLEY PREMIUM ENGINE | CORE V1.0
+    Target: Block Spin | Security: Tier 1
+    Godzilla-Style Professional Architecture
+]]--
+
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-local Window = OrionLib:MakeWindow({Name = "GODZILLA HACK | HARLEY EDITION", HidePremium = false, SaveConfig = true, ConfigFolder = "GodzillaConfig"})
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
--- SECURE BYPASS
-local mt = getrawmetatable(game)
-setreadonly(mt, false)
-local oldNamecall = mt.__namecall
-mt.__namecall = newcclosure(function(self, ...)
-    local method = getnamecallmethod()
-    if method == "FireServer" and tostring(self):lower():find("anticheat") then return nil end
-    return oldNamecall(self, ...)
-end)
-setreadonly(mt, true)
+-- // CORE ENGINE SETTINGS
+local Engine = {
+    Settings = {
+        SilentAim = false,
+        ESP = false,
+        Speed = 16
+    }
+}
 
--- TAB: COMBAT
-local CombatTab = Window:MakeTab({Name = "Combat", Icon = "rbxassetid://4483345998", PremiumOnly = false})
-CombatTab:AddToggle({
-    Name = "Silent Aim (Headshot)",
-    Default = false,
-    Callback = function(Value) getgenv().SilentAim = Value end
+-- // BYPASS SYSTEM (Anti-Cheat Security Layer)
+local function BypassSecurity()
+    local mt = getrawmetatable(game)
+    setreadonly(mt, false)
+    local oldNamecall = mt.__namecall
+    
+    mt.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        -- Intercepting security probes
+        if tostring(self):lower():find("anticheat") or tostring(self):lower():find("check") then
+            return nil
+        end
+        return oldNamecall(self, ...)
+    end)
+    setreadonly(mt, true)
+end
+BypassSecurity()
+
+-- // UI SETUP
+local Window = OrionLib:MakeWindow({
+    Name = "GODZILLA ENGINE | HARLEY EDITION",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "HarleyEngine"
 })
 
--- TAB: VISUALS
-local VisualTab = Window:MakeTab({Name = "Visuals", Icon = "rbxassetid://4483345998", PremiumOnly = false})
-VisualTab:AddToggle({
-    Name = "ESP Box (Full)",
+-- // TABS
+local Tab_Combat = Window:MakeTab({Name = "Combat Core", Icon = "rbxassetid://4483345998"})
+local Tab_Visuals = Window:MakeTab({Name = "Visual Engine", Icon = "rbxassetid://4483345998"})
+local Tab_Utility = Window:MakeTab({Name = "World God Mode", Icon = "rbxassetid://4483345998"})
+
+-- // COMBAT SECTION
+Tab_Combat:AddToggle({
+    Name = "Silent Aim (Bullet Track)",
     Default = false,
     Callback = function(Value)
-        for _,v in pairs(game.Players:GetPlayers()) do
-            if v ~= game.Players.LocalPlayer and v.Character then
+        Engine.Settings.SilentAim = Value
+    end
+})
+
+-- // VISUALS SECTION
+Tab_Visuals:AddToggle({
+    Name = "ESP Box (Players)",
+    Default = false,
+    Callback = function(Value)
+        Engine.Settings.ESP = Value
+        for _, v in pairs(Players:GetPlayers()) do
+            if v ~= LocalPlayer and v.Character then
                 local h = v.Character:FindFirstChild("Highlight") or Instance.new("Highlight", v.Character)
                 h.Enabled = Value
+                h.FillColor = Color3.fromRGB(0, 255, 255)
             end
         end
     end
 })
 
--- TAB: PLAYER (GOD MODE)
-local PlayerTab = Window:MakeTab({Name = "God Mode", Icon = "rbxassetid://4483345998", PremiumOnly = false})
-PlayerTab:AddSlider({
-    Name = "Speed Hack",
-    Min = 16, Max = 150, Default = 16,
-    Callback = function(Value) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value end
+-- // UTILITY SECTION
+Tab_Utility:AddSlider({
+    Name = "WalkSpeed Modifier",
+    Min = 16, Max = 45, Default = 16,
+    Callback = function(Value)
+        LocalPlayer.Character.Humanoid.WalkSpeed = Value
+    end
 })
 
-PlayerTab:AddButton({
-    Name = "Kill All (Global)",
-    Callback = function()
-        -- Godzilla Hack tarzı global trigger
-        for _,v in pairs(game.Players:GetPlayers()) do
-            if v ~= game.Players.LocalPlayer then
-                -- Burada oyunun kendi "Damage" eventini tetiklemelisin
-            end
-        end
-    end
+-- // INITIALIZATION
+OrionLib:MakeNotification({
+    Name = "Harley Engine",
+    Content = "System Initialized. Status: SECURE.",
+    Image = "rbxassetid://4483345998",
+    Time = 5
 })
 
 OrionLib:Init()
