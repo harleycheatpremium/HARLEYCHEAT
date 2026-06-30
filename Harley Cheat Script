@@ -1,56 +1,40 @@
--- Harley Cheat | Premium Blockspin Hub
+-- Harley Cheat | Premium Block Spin Hub
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "Harley Cheat | Premium",
-    LoadingTitle = "Bypassing Security...",
+    Name = "Harley Premium | Block Spin",
+    LoadingTitle = "Harley Engine Loading...",
     LoadingSubtitle = "by Swoxy",
     Theme = "Amethyst",
 })
 
-local Tab = Window:CreateTab("Main", 4483362458)
-
--- Özellik Değişkenleri
-getgenv().SilentAim = false
-getgenv().ESP = false
-
--- Silent Aim Toggle
-Tab:CreateToggle({
-    Name = "Silent Aim",
-    CurrentValue = false,
-    Flag = "SilentAim",
-    Callback = function(Value)
-        getgenv().SilentAim = Value
-        if Value then
-            print("Silent Aim Aktif")
-        end
-    end,
-})
+local MainTab = Window:CreateTab("Main", 4483362458)
 
 -- ESP Toggle
-Tab:CreateToggle({
-    Name = "ESP (Wallhack)",
+MainTab:CreateToggle({
+    Name = "ESP (Highlight)",
     CurrentValue = false,
     Flag = "ESP",
     Callback = function(Value)
-        getgenv().ESP = Value
-        if Value then
-            -- ESP için basit bir highlight ekleme
-            for _, v in pairs(game.Players:GetPlayers()) do
-                if v ~= game.Players.LocalPlayer then
-                    local highlight = Instance.new("Highlight", v.Character)
-                    highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                end
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= game.Players.LocalPlayer and v.Character then
+                local highlight = v.Character:FindFirstChild("Highlight") or Instance.new("Highlight", v.Character)
+                highlight.Enabled = Value
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
             end
         end
     end,
 })
 
--- Bilgi Butonu
-Tab:CreateButton({
-    Name = "Konsolu Temizle",
-    Callback = function()
-        rconsoleclear()
+-- WalkSpeed Slider
+MainTab:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {16, 100},
+    Increment = 1,
+    Suffix = " Speed",
+    CurrentValue = 16,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
     end,
 })
 
