@@ -1,57 +1,32 @@
--- GODZILLA ENGINE | ALL-IN-ONE MORTY-STYLE PANEL V6.0
+-- GODZILLA ENGINE | V7.0 (NO-HOOK STABLE)
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Camera = game:GetService("Workspace").CurrentCamera
+local RunService = game:GetService("RunService")
 
--- // ENGINE SETTINGS
-getgenv().Godzilla = {
-    Silent = {Enabled = false, FOV = 200, Part = "Head"},
-    KillAura = {Enabled = false, Range = 15},
-    ESP = {Enabled = false},
-    Misc = {AntiKick = true}
-}
+getgenv().Godzilla = {Enabled = false, FOV = 200, Part = "HumanoidRootPart"}
 
--- // HOOKING ENGINE (MORTY STYLE)
-local mt = getrawmetatable(game)
-setreadonly(mt, false)
-local oldNamecall = mt.__namecall
-
-mt.__namecall = newcclosure(function(self, ...)
-    local method = getnamecallmethod()
-    local args = {...}
-    
-    if getgenv().Godzilla.Silent.Enabled and method == "FireServer" then
-        local Closest = nil
-        local MaxDist = getgenv().Godzilla.Silent.FOV
+-- // STABLE SILENT AIM (NON-HOOK)
+RunService.RenderStepped:Connect(function()
+    if getgenv().Godzilla.Enabled then
+        local Closest, MaxDist = nil, getgenv().Godzilla.FOV
         for _, v in pairs(Players:GetPlayers()) do
             if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
                 local Pos, OnScreen = Camera:WorldToScreenPoint(v.Character.HumanoidRootPart.Position)
                 local Dist = (Vector2.new(Pos.X, Pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-                if OnScreen and Dist < MaxDist then Closest = v end
+                if OnScreen and Dist < MaxDist then Closest = v; MaxDist = Dist end
             end
         end
-        if Closest then args[1] = Closest.Character[getgenv().Godzilla.Silent.Part].Position end
+        if Closest then
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, Closest.Character[getgenv().Godzilla.Part].Position)
+        end
     end
-    
-    if getgenv().Godzilla.Misc.AntiKick and method == "Kick" then return nil end
-    return oldNamecall(self, unpack(args))
 end)
-setreadonly(mt, true)
 
--- // UI SETUP
-local Window = OrionLib:MakeWindow({Name = "GODZILLA ENGINE | V6.0", SaveConfig = true})
+-- // UI
+local Window = OrionLib:MakeWindow({Name = "GODZILLA V7 | STABLE", SaveConfig = true})
+local Combat = Window:MakeTab({Name = "Combat", Icon = "rbxassetid://4483345998"})
 
-local Combat = Window:MakeTab({Name = "Combat Core", Icon = "rbxassetid://4483345998"})
-Combat:AddToggle({Name = "Silent Aim (Bullet Track)", Callback = function(v) getgenv().Godzilla.Silent.Enabled = v end})
-Combat:AddDropdown({Name = "Target Part", Options = {"Head", "HumanoidRootPart", "Torso"}, Callback = function(v) getgenv().Godzilla.Silent.Part = v end})
-Combat:AddSlider({Name = "FOV Size", Min = 50, Max = 500, Default = 200, Callback = function(v) getgenv().Godzilla.Silent.FOV = v end})
-
-local Visuals = Window:MakeTab({Name = "Visual Engine", Icon = "rbxassetid://4483345998"})
-Visuals:AddToggle({Name = "Player ESP", Callback = function(v) getgenv().Godzilla.ESP.Enabled = v end})
-
-local Misc = Window:MakeTab({Name = "Misc Settings", Icon = "rbxassetid://4483345998"})
-Misc:AddToggle({Name = "Anti-Kick Protection", Default = true, Callback = function(v) getgenv().Godzilla.Misc.AntiKick = v end})
-Misc:AddButton({Name = "Rejoin Server", Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, LocalPlayer) end})
-
+Combat:AddToggle({Name = "Silent Aim (Camera Lock)", Callback = function(v) getgenv().Godzilla.Enabled = v end})
 OrionLib:Init()
